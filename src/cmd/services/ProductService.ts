@@ -115,25 +115,25 @@ export default new (class ProductService {
         });
       }
 
-      const returnToJson = {
-        id: obejct.id,
-        name: obejct.name,
-        color: color,
-        stock: obejct.stock,
-        material: obejct.material,
-        description: obejct.description,
-        image_src: imageSrc,
-        features: features,
-        price: price,
-        size: size,
-        categories: categories,
-        created_at,
-        updated_at,
-      };
+      // const returnToJson = {
+      //   id: obejct.id,
+      //   name: obejct.name,
+      //   color: color,
+      //   stock: obejct.stock,
+      //   material: obejct.material,
+      //   description: obejct.description,
+      //   image_src: imageSrc,
+      //   features: features,
+      //   price: price,
+      //   size: size,
+      //   categories: categories,
+      //   created_at,
+      //   updated_at,
+      // };
 
       return res
         .status(201)
-        .json({ code: 201, message: "success", data: returnToJson });
+        .json({ code: 201, message: "success", data: obejct });
     } catch (error) {
       return res.status(500).json({
         code: 500,
@@ -150,6 +150,19 @@ export default new (class ProductService {
           reviews: true,
         },
       });
+
+      for (let i = 0; i < findAllProducts.length; i++) {
+        if (findAllProducts[i].reviews.length > 0) {
+          const review = findAllProducts[i].reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          const averageRating = review / findAllProducts[i].reviews.length;
+          findAllProducts[i].rating_average = Math.round(averageRating);
+          findAllProducts[i].rating_count = findAllProducts[i].reviews.length;
+          await this.ProductRepository.save(findAllProducts);
+        }
+      }
 
       // const convertProducts: TGetProduct[] = [];
 
@@ -189,7 +202,7 @@ export default new (class ProductService {
     try {
       const id_product: any = req.params.id_product;
 
-      const findOne = await this.ProductRepository.find({
+      const findOne = await this.ProductRepository.findOne({
         where: {
           id: id_product,
         },
@@ -197,6 +210,20 @@ export default new (class ProductService {
           reviews: true,
         },
       });
+
+      if (findOne.reviews.length > 0) {
+        const rating = findOne.reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        const ratingAverage = rating / findOne.reviews.length;
+
+        findOne.rating_average = Math.round(ratingAverage);
+        findOne.rating_count = findOne.reviews.length;
+
+        this.ProductRepository.save(findOne);
+      }
+
       if (!findOne) {
         return res.status(404).json({
           code: 404,

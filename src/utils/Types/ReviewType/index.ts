@@ -33,7 +33,7 @@
 export type TPostReview = {
   id_user: number;
   username: string;
-  rating: string;
+  rating: number;
   comment: string;
   id_product: string;
 };
