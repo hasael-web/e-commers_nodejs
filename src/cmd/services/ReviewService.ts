@@ -34,24 +34,6 @@ export default new (class ReviewService {
         id_product: value.id_product,
       };
 
-      // const findProduct = await this.ProductRepository.findOne({
-      //   where: {
-      //     id: object.id_product,
-      //   },
-      //   relations: {
-      //     reviews: true,
-      //   },
-      // });
-      // if (findProduct) {
-      //   let rating_user: number;
-      //   for (let i = 0; i < findProduct.reviews.length; i++) {
-      //     rating_user += findProduct.reviews[i].rating;
-      //   }
-      //   const count = findProduct.reviews.length;
-      //   const average = rating_user / count;
-      //   findProduct.rating_average = average;
-      // }
-
       const newReview = await this.ReviewsRepository.save(object);
       if (!newReview) {
         return res
@@ -70,18 +52,6 @@ export default new (class ReviewService {
       });
     }
   }
-  async getAll(req: Request, res: Response): Promise<Response> {
-    try {
-      const body = req.body;
-      return res.status(201).json({ code: 201, message: "success", data: "" });
-    } catch (error) {
-      return res.status(500).json({
-        code: 500,
-        message: "internal server error on get all reviews",
-        error,
-      });
-    }
-  }
   async getOne(req: Request, res: Response): Promise<Response> {
     try {
       const body = req.body;
@@ -94,10 +64,36 @@ export default new (class ReviewService {
       });
     }
   }
+
   async deleteReview(req: Request, res: Response): Promise<Response> {
     try {
-      const body = req.body;
-      return res.status(201).json({ code: 201, message: "success", data: "" });
+      const { id_review } = req.body;
+
+      if (!id_review) {
+        return res
+          .status(404)
+          .json({ code: 404, message: "id_review required" });
+      }
+
+      const findReview = await this.ReviewsRepository.findOne({
+        where: {
+          id: id_review,
+        },
+      });
+
+      if (!findReview) {
+        return res
+          .status(404)
+          .json({ code: 404, message: `id not found = ${id_review}` });
+      }
+
+      this.ReviewsRepository.remove(findReview);
+
+      return res.status(201).json({
+        code: 201,
+        message: "success",
+        data: "success to delete review",
+      });
     } catch (error) {
       return res.status(500).json({
         code: 500,
@@ -106,10 +102,34 @@ export default new (class ReviewService {
       });
     }
   }
+
   async updateReview(req: Request, res: Response): Promise<Response> {
     try {
-      const body = req.body;
-      return res.status(201).json({ code: 201, message: "success", data: "" });
+      const body: { rating: number; comment: string } = req.body;
+      const id_review = req.params.id_review;
+
+      const objectToUpadte = {
+        rating: "rating",
+        comment: "comment",
+      };
+
+      const updatReview = await this.ReviewsRepository.findOne({
+        where: {
+          id: id_review,
+        },
+      });
+
+      for (const value in objectToUpadte) {
+        if (updatReview[value] !== null || updatReview[value] !== undefined) {
+          updatReview[value] = body[value];
+        }
+      }
+
+      await this.ReviewsRepository.save(updatReview);
+
+      return res
+        .status(201)
+        .json({ code: 201, message: "success", data: updatReview });
     } catch (error) {
       return res.status(500).json({
         code: 500,

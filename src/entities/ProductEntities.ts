@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm";
 import { ReviewsEntities } from "./ReviewsEntities";
+import { VariansEntities } from "./VariansEntities";
 
 @Entity({ name: "product" })
 export class ProductEntities {
@@ -9,10 +10,6 @@ export class ProductEntities {
   name: string;
   @Column({ name: "description" })
   description: string;
-  @Column({ name: "price" })
-  price: number;
-  @Column({ name: "stock" })
-  stock: number;
   @Column({ name: "material" })
   material: string;
 
@@ -22,10 +19,10 @@ export class ProductEntities {
   features: string[];
   @Column("simple-array")
   image_src: string[];
-  @Column("simple-array")
-  size: string[];
-  @Column("simple-array")
-  color: string[];
+
+  @OneToMany(() => VariansEntities, (variant) => variant.products)
+  @JoinColumn({ name: "varians" })
+  varians: VariansEntities[];
 
   @Column({ name: "rating_average", default: 0, nullable: true })
   rating_average: number;

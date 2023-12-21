@@ -5,7 +5,12 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // all router imported
-import { ProductRouter, ReviewRouter } from "./cmd/routes";
+import {
+  ProductRouter,
+  ReviewRouter,
+  Test_VariantROuter,
+  UserRouter,
+} from "./cmd/routes";
 import cdConfig from "./cmd/config/cdConfig";
 
 const { PORT } = process.env;
@@ -33,6 +38,8 @@ AppDataSource.initialize()
     // router
     app.use("/api/v1", ProductRouter);
     app.use("/api/v1", ReviewRouter);
+    app.use("/api/v1", UserRouter);
+    app.use("/api/v2", Test_VariantROuter);
 
     app.listen(port, () => console.log(`server running ${port}`));
 

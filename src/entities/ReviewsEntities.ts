@@ -10,28 +10,28 @@
 
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { ProductEntities } from "./ProductEntities";
+import { UserEntities } from "./UserEntities";
 
 @Entity({ name: "reviews" })
 export class ReviewsEntities {
   @PrimaryColumn({ type: "uuid" })
   id: string;
-  @Column({ name: "id_user" })
-  id_user: number;
   @Column({ name: "username" })
   username: string;
   @Column({ name: "rating" })
   rating: number;
   @Column({ name: "comment" })
   comment: string;
-
+  @ManyToOne(() => UserEntities, (user) => user.review)
+  @JoinColumn({ name: "id_user" })
+  id_user: string;
   // relasi to table products
   @ManyToOne(() => ProductEntities, (product) => product.reviews, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  @JoinColumn()
+  @JoinColumn({ name: "id_product" })
   id_product: ProductEntities;
-
   @Column({
     name: "created_at",
     type: "timestamp",

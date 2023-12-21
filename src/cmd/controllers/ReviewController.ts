@@ -5,9 +5,6 @@ export default new (class ReviewController {
   create(req: Request, res: Response) {
     ReviewService.create(req, res);
   }
-  getAll(req: Request, res: Response) {
-    ReviewService.getAll(req, res);
-  }
   getOne(req: Request, res: Response) {
     ReviewService.getOne(req, res);
   }

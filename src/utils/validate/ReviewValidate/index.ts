@@ -7,7 +7,7 @@
 import * as Joi from "joi";
 
 export const ReviewValidate = Joi.object({
-  id_user: Joi.number().required(),
+  id_user: Joi.string().required(),
   username: Joi.string().required(),
   rating: Joi.number().required(),
   comment: Joi.string().required(),

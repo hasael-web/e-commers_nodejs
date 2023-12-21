@@ -1,0 +1,50 @@
+{
+    "varians":[
+        {
+            "color":"red",
+            "varian":[
+                {
+                    "size":"xl",
+                    "price":"4000",
+                    "stock":40
+                },
+                {
+                    "size":"l",
+                    "price":"4000",
+                    "stock":40
+                },
+                {
+                    "size":"s",
+                    "price":"4000",
+                    "stock":40
+                }
+            ]
+        },
+        {
+            "color":"black",
+            "varian":[
+                {
+                    "size":"xl",
+                    "price":"4000"
+                },
+                {
+                    "size":"l",
+                    "price":"4000"
+                },
+                {
+                    "size":"s",
+                    "price":"4000"
+                }
+            ]
+        }
+    ]
+}
+
+color
+red,black
+
+size
+25,xl,xxl
+
+next
+
