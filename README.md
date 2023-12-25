@@ -133,6 +133,9 @@
 - > CREATED PRODUCT
   - > MEHTOD : `POST`
   - > URL : `http://localhost:3000/api/v1/product`
+  - > AUTH :
+    - > true
+    - > the role must be that of "supplier"
   - > note : " Making products requires quite complex body data"
   - > example :
 
@@ -225,26 +228,155 @@
 
   - > METHOD : `DELETE`
   - > URL : `http://localhost:3000/api/v1/product/{id_product}`
+  - > AUTH :
+    - > true
+    - > role: "supplier"
+    - > Only the creator can delete it
   - > example : `http://localhost:3000/api/v1/product/fac08e5c-096f-4c0c-8eda-96468d544728`
   - > RESULT :
+
+```json
+{
+  "code": 200,
+  "message": "success to delete data"
+}
+```
 
 - [B] REVIEWS
 
   - > MAKE REVIEWS FOR PRODUCTS
     - > METHOD : `POST`
+    - > AUTH :
+      - > true
+      - > Users must log in or register first
     - > URL : `http://localhost:3000/api/v1/review`
     - > note : `REVIEWS REQUIRE DATA FROM THE BODY`
     - > example :
-    - > RESULT
+
+```json
+// from body
+{
+  "rating": 4,
+  "comment": "test comment",
+  "id_product": "dc1cf850-5b79-4422-b648-3829a0b72f4d"
+}
+```
+
+    - > RESULT :
+
+```json
+{
+  "code": 201,
+  "message": "success",
+  "data": {
+    "id": "ff4d8839-d408-4a59-84f9-2ffe2018f424",
+    "id_user": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+    "username": "hasael1244",
+    "rating": 4,
+    "comment": "test comment",
+    "id_product": "dc1cf850-5b79-4422-b648-3829a0b72f4d"
+  }
+}
+```
 
 - [C] USERS
   - > REGISTER
     - > METHOD : `POST`
     - > URL : `http://localhost:3000/api/v1/register`
     - > example :
+
+```json
+// from body
+{
+  "username": "hasaej66123",
+  "email": "haselbutar623423@gmail.com",
+  "password": "1234"
+}
+```
+
     - > RESULT:
-  - > LOGIN
-    - > METHOD : `POST`
-    - > URL :`http://localhost:3000/api/v1/login`
-    - > example :
+
+```json
+{
+  "code": 201,
+  "message": "successs",
+  "data": {
+    "id": "1b0cbe4e-21c6-46e0-92ad-c00a9da715ee",
+    "email": "haselbutar623423@gmail.com",
+    "username": "hasaej66123",
+    "password": "$2b$10$8Y3ZtbwX0l/Pj/2S3uZp8eYXYiBZbg0kOSE1ZjWV1g1i8qX4q.Kpm",
+    "role": "customer",
+    "created_at": "2023-12-25T07:59:37.769Z",
+    "updated_at": "2023-12-25T07:59:37.769Z",
+    "deleted_at": "2023-12-25T00:59:37.771Z",
+    "profile_image": "empty"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFiMGNiZTRlLTIxYzYtNDZlMC05MmFkLWMwMGE5ZGE3MTVlZSIsImVtYWlsIjoiaGFzZWxidXRhcjYyMzQyM0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6Imhhc2FlajY2MTIzIiwicm9sZSI6ImN1c3RvbWVyIiwiaWF0IjoxNzAzNDkxMTc3LCJleHAiOjE3MDM0OTgzNzd9.b29onCxwu8Va2bkCcZ9ivhlnYeWp3Ce_YaXWYh1wf_c"
+}
+```
+
+- > LOGIN
+  - > METHOD : `POST`
+  - > URL :`http://localhost:3000/api/v1/login`
+  - > example :
+
+```json
+// from body
+{
+  "emailORusername": "haselbutar@gmail.com",
+  "password": "1234"
+}
+```
+
     - > RESULT :
+
+```json
+{
+  "code": 201,
+  "message": "successs",
+  "data": {
+    "id": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+    "email": "haselbutar@gmail.com",
+    "username": "hasael1244",
+    "password": "$2b$10$gSOweSmATJ1ME8Apcpt3lOZyCxCiCpbcFXolvaiicynqrneD0Sb7C",
+    "role": "supplier",
+    "profile_image": "empty",
+    "created_at": "2023-12-24T03:26:19.793Z",
+    "updated_at": "2023-12-24T03:26:19.793Z",
+    "deleted_at": "2023-12-23T20:26:19.822Z"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI4MTMzYzhhLTUzNDUtNGJlOS1iMmI0LTRhOWM4ZmFhYzFjYiIsImVtYWlsIjoiaGFzZWxidXRhckBnbWFpbC5jb20iLCJ1c2VybmFtZSI6Imhhc2FlbDEyNDQiLCJyb2xlIjoic3VwcGxpZXIiLCJpYXQiOjE3MDM0OTA3NjAsImV4cCI6MTcwMzQ5Nzk2MH0.NhSYgvPCuF4RXDD_R9doiRlW1FLTWsEDytIhO6R1yN0"
+}
+```
+
+- > UPDATE ROLE USER
+  - > METHOD : `PATCH`
+  - > AUTH :
+    - > true
+    - > Users must log in or register first
+  - > URL :`http://localhost:3000/api/v1/login`
+  - > example :
+
+```json
+// from body
+{
+  "role": "supplier"
+}
+```
+
+- > RESULT :
+
+```json
+{
+  "code": 201,
+  "message": "successs",
+  "data": {
+    "id": "1b0cbe4e-21c6-46e0-92ad-c00a9da715ee",
+    "role": "supplier",
+    "profile_image": "empty",
+    "created_at": "2023-12-25T07:59:37.769Z",
+    "updated_at": "2023-12-25T07:59:37.769Z",
+    "deleted_at": "2023-12-25T00:59:37.771Z"
+  }
+}
+```
