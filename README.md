@@ -294,7 +294,7 @@
 }
 ```
 
-    - > RESULT:
+    - > RESULT :
 
 ```json
 {
@@ -354,7 +354,10 @@
   - > AUTH :
     - > true
     - > Users must log in or register first
-  - > URL :`http://localhost:3000/api/v1/login`
+  - > URL :`http://localhost:3000/api/v1/user-update`
+  - > role users
+    - > customer
+    - > supplier
   - > example :
 
 ```json
@@ -364,7 +367,7 @@
 }
 ```
 
-- > RESULT :
+    - > RESULT :
 
 ```json
 {
