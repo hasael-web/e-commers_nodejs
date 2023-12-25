@@ -1,6 +1,14 @@
-import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from "typeorm";
 import { ReviewsEntities } from "./ReviewsEntities";
 import { VariansEntities } from "./VariansEntities";
+import { UserEntities } from "./UserEntities";
 
 @Entity({ name: "product" })
 export class ProductEntities {
@@ -20,7 +28,16 @@ export class ProductEntities {
   @Column("simple-array")
   image_src: string[];
 
-  @OneToMany(() => VariansEntities, (variant) => variant.products)
+  @ManyToOne(() => UserEntities, (user) => user.products, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
+  @JoinColumn({ name: "id_user" })
+  id_user: UserEntities;
+  @OneToMany(() => VariansEntities, (variant) => variant.products, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
   @JoinColumn({ name: "varians" })
   varians: VariansEntities[];
 
@@ -36,7 +53,6 @@ export class ProductEntities {
   })
   @JoinColumn()
   reviews: ReviewsEntities[];
-
   @Column({
     name: "created_at",
     type: "timestamp",
@@ -49,4 +65,11 @@ export class ProductEntities {
     default: () => "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+  @Column({
+    name: "deleted_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
+  deleted_at: Date;
 }

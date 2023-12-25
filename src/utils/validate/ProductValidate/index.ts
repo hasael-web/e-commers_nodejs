@@ -9,13 +9,13 @@ export const ProductValidate = Joi.object({
 });
 
 export const ProductUpdate = Joi.object({
+  name: Joi.string().trim(),
   categories: Joi.array().items(Joi.string().trim()),
-  color: Joi.array().items(Joi.string().trim()),
   description: Joi.string().trim().min(3),
   features: Joi.array().items(Joi.string().trim()),
   material: Joi.string().trim(),
-  name: Joi.string().trim(),
+  color: Joi.string().trim(),
   price: Joi.number(),
-  size: Joi.array().items(Joi.string().trim()),
+  size: Joi.string().trim(),
   stock: Joi.number(),
 });

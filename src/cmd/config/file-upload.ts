@@ -18,6 +18,8 @@ export default new (class UploadFile {
       },
     });
 
+    
+
     const uploadMulter = multer({ storage: storage }).array(value, 5);
     return uploadMulter;
   }

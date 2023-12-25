@@ -12,16 +12,17 @@ import {
   UserRouter,
 } from "./cmd/routes";
 import cdConfig from "./cmd/config/cdConfig";
+import * as cookieParser from "cookie-parser";
 
 const { PORT } = process.env;
 
 const port = PORT || 5000;
 const app = express();
 
+app.use(express.json());
+app.use(cookieParser());
 AppDataSource.initialize()
   .then(async () => {
-    app.use(express.json());
-
     app.get("/", async (req: Request, res: Response): Promise<Response> => {
       try {
         return res.status(200).send("welcome to my api ");

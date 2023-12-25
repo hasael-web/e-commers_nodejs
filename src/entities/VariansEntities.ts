@@ -20,13 +20,15 @@ export class VariansEntities {
   @ManyToOne(() => ProductEntities, (product) => product.varians, {
     cascade: true,
     eager: true,
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   @JoinColumn({ name: "id_product" })
   products: ProductEntities;
 
   @OneToMany(() => VarianDetailEntities, (d) => d.id_varians)
   @JoinColumn()
-  variant_detail: VarianDetailEntities[];
+  varian_detail: VarianDetailEntities[];
 
   @Column({
     name: "created_at",
@@ -40,4 +42,11 @@ export class VariansEntities {
     default: () => "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+  @Column({
+    name: "deleted_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
+  deleted_at: Date;
 }

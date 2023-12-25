@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Repository } from "typeorm";
+import { Connection, Repository, createConnection, getManager } from "typeorm";
 import { ProductEntities } from "../../entities/ProductEntities";
 import { AppDataSource } from "../../data-source";
 import {
@@ -7,6 +7,7 @@ import {
   TDetailVarian,
   TImageFromMulter,
   TPostProduct,
+  TUpdateProduct,
 } from "../../utils/Types/ProductType";
 import { unlink } from "fs";
 import {
@@ -17,6 +18,13 @@ import { v4 as uuidv4 } from "uuid";
 import cdConfig from "../config/cdConfig";
 import { VariansEntities } from "../../entities/VariansEntities";
 import { VarianDetailEntities } from "../../entities/VarianDetailEntities";
+import { TUser } from "../../utils/Types/UserType";
+import { toString } from "lodash";
+import { UserEntities } from "../../entities/UserEntities";
+
+interface RequestJWT extends Request {
+  user: TUser;
+}
 
 export default new (class ProductService {
   private readonly ProductRepository: Repository<ProductEntities> =
@@ -25,8 +33,10 @@ export default new (class ProductService {
     AppDataSource.getRepository(VariansEntities);
   private readonly DetailVarianRespository: Repository<VarianDetailEntities> =
     AppDataSource.getRepository(VarianDetailEntities);
+  private readonly UserRepository: Repository<UserEntities> =
+    AppDataSource.getRepository(UserEntities);
 
-  async create(req: Request, res: Response): Promise<Response> {
+  async create(req: RequestJWT, res: Response): Promise<Response> {
     try {
       const {
         categories,
@@ -44,6 +54,7 @@ export default new (class ProductService {
         material,
         name,
       });
+
       const created_at = new Date();
       const updated_at = new Date();
       const id_product: string = uuidv4();
@@ -54,133 +65,143 @@ export default new (class ProductService {
           .json({ code: 404, message: "error to create new product,", error });
       }
 
-      const imageSrc: Array<string> = [];
-      const result: TImageFromMulter[] = await cdConfig.cloudUpload(req);
+      let returnToJson: any = {};
 
-      for (let i = 0; i < result.length; i++) {
-        if (result[i].secure_url) {
-          imageSrc.push(result[i].secure_url);
-        }
-        if (result.length > 0) {
-          unlink(
-            `${req.files[i].destination}/${req.files[i].filename}`,
-            (err) => {
-              if (err) {
-                console.error("Error deleting file:", err);
-              } else {
-                console.log("File deleted successfully");
+      console.log("test 1");
+
+      await AppDataSource.transaction(async (transactionalEntityManager) => {
+        // membuat products
+        const imageSrc: Array<string> = [];
+        const result: TImageFromMulter[] = await cdConfig.cloudUpload(req);
+
+        for (let i = 0; i < result.length; i++) {
+          if (result[i].secure_url) {
+            imageSrc.push(result[i].secure_url);
+          }
+          if (result.length > 0) {
+            unlink(
+              `${req.files[i].destination}/${req.files[i].filename}`,
+              (err) => {
+                if (err) {
+                  console.error("Error deleting file:", err);
+                } else {
+                  console.log("File deleted successfully");
+                }
               }
-            }
-          );
+            );
+          }
         }
-      }
+        const id_user: string = req.user.id;
+        const user = await this.UserRepository.findOne({
+          where: {
+            id: id_user,
+          },
+        });
 
-      const obejct = {
-        id: id_product,
-        categories: value.categories,
-        features: value.features,
-        description: value.description,
-        image_src: imageSrc,
-        material: value.material,
-        name: value.name,
-        created_at,
-        updated_at,
-      };
-
-      const newProduct = await this.ProductRepository.save(obejct);
-
-      varians.forEach(async (varian: TDetailVarian) => {
-        const id_varians = uuidv4();
-        const product: any = id_product;
-        const dataToVarians = {
-          id: id_varians,
-          products: product,
-          color: varian.color,
+        const obejct = {
+          id: id_product,
+          id_user: user,
+          categories: value.categories,
+          features: value.features,
+          description: value.description,
+          image_src: imageSrc,
+          material: value.material,
+          name: value.name,
           created_at,
           updated_at,
         };
-        const responseVarians = await this.VariantsRepository.save(
-          dataToVarians
-        );
-        if (!responseVarians) {
-          return res
-            .status(404)
-            .json({ code: 404, messaage: "error to create varians data" });
-        }
 
-        if (varian?.varian_detail?.length > 0) {
-          const validVarianDetails = varian.varian_detail.filter(
-            (detail) => detail !== null
-          );
-          validVarianDetails.forEach(async (i: TDV) => {
-            const id_varian_detail = uuidv4();
-            const dataToDetail = {
-              id: id_varian_detail,
-              id_varians,
-              size: i.size,
-              price: i.price,
-              stock: i.stock,
-              created_at,
-              updated_at,
-            };
-            const responseDetail = await this.DetailVarianRespository.save(
-              dataToDetail
-            );
-            if (!responseDetail) {
-              return res
-                .status(404)
-                .json({ code: 404, messaage: "error to create varians data" });
-            }
+        const newProduct = await transactionalEntityManager.save(
+          ProductEntities,
+          obejct
+        );
+
+        if (!newProduct) {
+          return res.status(404).json({
+            code: 404,
+            message: "cannot save product to database",
+            error,
           });
         }
-      });
 
-      // const newProduct = await this.ProductRepository.save({
-      //   id: id_product,
-      //   categories: value.categories,
-      //   color: value.color,
-      //   description: value.description,
-      //   features: value.features,
-      //   image_src: value.image_src,
-      //   material: value.material,
-      //   name: value.name,
-      //   price: value.price,
-      //   rating_average: value.rating_average,
-      //   rating_count: value.rating_count,
-      //   reviews: value.reviews,
-      //   size: value.size,
-      //   stock: value.stock,
-      // });
-
-      if (!newProduct) {
-        return res.status(404).json({
-          code: 404,
-          message: "cannot save product to database",
-          error,
-        });
-      }
-
-      const returnVarians = varians.map((varian: any) => {
-        const validDetails = varian.varian_detail.filter(
-          (detail: any) => detail !== null
-        );
-        return {
-          color: varian.color,
-          varian_detail: validDetails.length > 0 ? validDetails : null,
+        const fieldVarians = {
+          color: "color",
+          varian_detail: "varian_detail",
         };
+
+        for (const fieldvarians in fieldVarians) {
+          const id_varians = uuidv4();
+          const product: any = id_product;
+          let color: string = "";
+
+          if (varians[fieldvarians] === "color") {
+            color = varians[fieldvarians];
+          }
+          const dataToVarians = {
+            id: id_varians,
+            products: product,
+            color,
+            created_at,
+            updated_at,
+          };
+
+          // varians
+          const variansReponse = await transactionalEntityManager.save(
+            VariansEntities,
+            dataToVarians
+          );
+          if (!variansReponse) {
+            return res
+              .status(404)
+              .json({ code: 404, message: "cannot save varians" });
+          }
+
+          // membuat detail varian
+          if (varians[fieldvarians] === "varian_detail") {
+            for (const i of varians[fieldvarians]) {
+              const id_varian_detail = uuidv4();
+              const dataToDetail = {
+                id: id_varian_detail,
+                id_varians,
+                size: i.size,
+                price: i.price,
+                stock: i.stock,
+                created_at,
+                updated_at,
+              };
+              const responseDetail = await transactionalEntityManager.save(
+                VarianDetailEntities,
+                dataToDetail
+              );
+              if (!responseDetail) {
+                throw new Error("error creating variant detail data");
+              }
+            }
+          }
+
+          const returnVarians = varians.map((varian: any) => {
+            const validDetails = varian.varian_detail.filter(
+              (detail: any) => detail !== null
+            );
+            return {
+              color: varian.color,
+              varian_detail: validDetails.length > 0 ? validDetails : null,
+            };
+          });
+          returnToJson = {
+            id: obejct.id,
+            name: obejct.name,
+            material: obejct.material,
+            description: obejct.description,
+            image_src: imageSrc,
+            features: features,
+            varians: returnVarians,
+            categories: categories,
+            created_at,
+            updated_at,
+          };
+        }
       });
-      const returnToJson = {
-        id: obejct.id,
-        name: obejct.name,
-        material: obejct.material,
-        description: obejct.description,
-        image_src: imageSrc,
-        features: features,
-        varians: returnVarians,
-        categories: categories,
-        created_at,
-        updated_at,
-      };
 
       return res
         .status(201)
@@ -210,7 +231,7 @@ export default new (class ProductService {
           "created_at",
           "updated_at",
         ],
-        relations: ["reviews", "varians", "varians.variant_detail"],
+        relations: ["reviews", "varians", "varians.varian_detail"],
       });
 
       for (let i = 0; i < findAllProducts.length; i++) {
@@ -241,7 +262,7 @@ export default new (class ProductService {
         varians: product.varians.map((varian) => ({
           id: varian.id,
           color: varian.color,
-          variant_detail: varian.variant_detail.map((detail) => ({
+          variant_detail: varian.varian_detail.map((detail) => ({
             id: detail.id,
             size: detail.size,
             stock: detail.stock,
@@ -278,7 +299,7 @@ export default new (class ProductService {
       return res.status(500).json({
         code: 500,
         message: "internal server error on find all products",
-        error,
+        error: error.message,
       });
     }
   }
@@ -291,8 +312,15 @@ export default new (class ProductService {
         where: {
           id: id_product,
         },
-        relations: ["reviews", "varians", "varians.variant_detail"],
+        // relations:{
+        //   reviews
+        // }
+        relations: ["reviews", "varians", "varians.varian_detail"],
       });
+
+      if (!findOne) {
+        return res.status(404).json({ code: 404, message: "id not found" });
+      }
 
       if (findOne.reviews.length > 0) {
         const rating = findOne.reviews.reduce(
@@ -319,10 +347,11 @@ export default new (class ProductService {
         rating_count: findOne.rating_count,
         created_at: findOne.created_at,
         updated_at: findOne.updated_at,
+        reviews: findOne.reviews,
         varians: findOne.varians.map((varian) => ({
           id: varian.id,
           color: varian.color,
-          variant_detail: varian.variant_detail.map((detail) => ({
+          varian_detail: varian.varian_detail.map((detail) => ({
             id: detail.id,
             size: detail.size,
             stock: detail.stock,
@@ -344,33 +373,34 @@ export default new (class ProductService {
       return res.status(500).json({
         code: 500,
         message: "internal server error on findOne ",
-        error,
+        error: error.message,
       });
     }
   }
 
-  async deleteProduct(req: Request, res: Response): Promise<Response> {
+  async deleteProduct(req: RequestJWT, res: Response): Promise<Response> {
     try {
       const id_product: string = req.params.id_product;
 
-      const response = await this.ProductRepository.createQueryBuilder(
-        "product"
-      )
-        .delete()
-        .from(ProductEntities)
-        .where("product.id = :id", { id: id_product })
-        .execute();
+      const findProduct = await this.ProductRepository.findOne({
+        where: {
+          id: id_product,
+        },
+        relations: {
+          id_user: true,
+        },
+      });
 
-      // const response = await this.ProductRepository.find({
-      //   where:{
-      //     id:id_product
-      //   }
-      // })
-      if (!response) {
-        return res.status(400).json({ code: 400, message: "id not found" });
+      console.log(findProduct);
+
+      if (findProduct.id_user.id !== req.user.id) {
+        return res.status(403).json({
+          code: 403,
+          message: "id user berbeda, product tidak bisa dihapus",
+        });
       }
 
-      // const deleteProduct = await this.ProductRepository.delete(response)
+      await this.ProductRepository.remove(findProduct);
 
       return res
         .status(200)
@@ -379,12 +409,12 @@ export default new (class ProductService {
       return res.status(500).json({
         code: 500,
         message: "internal server error delete product ",
-        error,
+        error: error.message,
       });
     }
   }
 
-  async updateProduct(req: Request, res: Response): Promise<Response> {
+  async updateProduct(req: RequestJWT, res: Response): Promise<Response> {
     try {
       const id_product: string = req.params.id_product;
       const {
@@ -393,25 +423,28 @@ export default new (class ProductService {
         features,
         material,
         name,
-      }: TPostProduct = req.body;
+      }: TUpdateProduct = req.body;
 
       const { value, error } = ProductUpdate.validate({
-        categories,
-        description,
-        features,
-        material,
         name,
+        description,
+        material,
+        categories,
+        features,
       });
       if (error) {
         return res
           .status(404)
           .json({ code: 404, message: "error to update data", error });
       }
-      console.log(value);
 
+      // mencari product yang mau di update
       const product = await this.ProductRepository.findOne({
         where: {
           id: id_product,
+        },
+        relations: {
+          varians: true,
         },
       });
 
@@ -422,15 +455,13 @@ export default new (class ProductService {
         });
       }
 
+      // update prodoct
+
       const fieldsToUpdate = {
         name: "name",
         description: "description",
-        price: "price",
-        stock: "stock",
         material: "material",
         categories: "categories",
-        size: "size",
-        color: "color",
         features: "features",
       };
 
@@ -439,45 +470,6 @@ export default new (class ProductService {
           product[fieldsToUpdate[field]] = value[field];
         }
       }
-
-      // const imageSrc: Array<string> = [];
-
-      // if (value.name !== null || undefined) {
-      //   product.name = value.name;
-      // }
-      // if (value.description !== null || undefined) {
-      //   product.description = value.description;
-      // }
-      // if (value.price !== null || undefined) {
-      //   product.price = value.price;
-      // }
-      // if (value.stock !== null || undefined) {
-      //   product.stock = value.stock;
-      // }
-      // if (value.material !== null || undefined) {
-      //   product.material = value.material;
-      // }
-      // if (value.categories !== null || undefined) {
-      //   product.categories = value.categories;
-      // }
-      // if (value.size !== null || undefined) {
-      //   product.size = value.size;
-      // }
-      // if (value.color !== null || undefined) {
-      //   product.color = value.color;
-      // }
-      // if (value.features !== null || undefined) {
-      //   product.features = value.features;
-      // }
-      // if (result.length > 0) {
-      //   for (let i = 0; i < result.length; i++) {
-      //     if (result[i].secure_url) {
-      //       imageSrc.push(result[i].secure_url);
-      //     }
-      //   }
-
-      //   product.image_src = imageSrc;
-      // }
 
       const result: TImageFromMulter[] = await cdConfig.cloudUpload(req);
       const imageSrc: string[] = result
@@ -491,6 +483,9 @@ export default new (class ProductService {
       const updated_at = new Date();
       product.updated_at = updated_at;
 
+      // update varians products
+
+      // save perubahan
       await this.ProductRepository.save(product);
 
       return res

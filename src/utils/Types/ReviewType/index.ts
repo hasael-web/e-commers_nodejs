@@ -31,8 +31,6 @@
 //   updated_at: Date;
 
 export type TPostReview = {
-  id_user: string;
-  username: string;
   rating: number;
   comment: string;
   id_product: string;

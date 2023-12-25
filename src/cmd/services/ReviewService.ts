@@ -5,15 +5,20 @@ import { Repository } from "typeorm";
 import { ReviewsEntities } from "../../entities/ReviewsEntities";
 import { AppDataSource } from "../../data-source";
 import { ReviewValidate } from "../../utils/validate/ReviewValidate";
-import { ProductEntities } from "../../entities/ProductEntities";
+
+import { TUser } from "../../utils/Types/UserType";
+import { UserEntities } from "../../entities/UserEntities";
+interface RequestJWT extends Request {
+  user: TUser;
+}
 
 export default new (class ReviewService {
   private readonly ReviewsRepository: Repository<ReviewsEntities> =
     AppDataSource.getRepository(ReviewsEntities);
-  private readonly ProductRepository: Repository<ProductEntities> =
-    AppDataSource.getRepository(ProductEntities);
+  private readonly UserRepository: Repository<UserEntities> =
+    AppDataSource.getRepository(UserEntities);
 
-  async create(req: Request, res: Response): Promise<Response> {
+  async create(req: RequestJWT, res: Response): Promise<Response> {
     try {
       const body: TPostReview = req.body;
 
@@ -23,12 +28,26 @@ export default new (class ReviewService {
           .status(404)
           .json({ code: 404, message: "validate error :", error });
       }
+
       const id_review: string = uuidv4();
+      const id_user = req.user.id;
+      const username = req.user.username;
+      const user = await this.UserRepository.findOne({
+        where: {
+          id: id_user,
+        },
+      });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ code: 404, message: "id user not found" });
+      }
 
       const object = {
         id: id_review,
-        id_user: value.id_user,
-        username: value.username,
+        id_user: user,
+        username,
         rating: value.rating,
         comment: value.comment,
         id_product: value.id_product,
@@ -41,9 +60,18 @@ export default new (class ReviewService {
           .json({ code: 404, message: "error id_product not found" });
       }
 
+      const sendToJson = {
+        id: newReview.id,
+        id_user: newReview.id_user.id,
+        username: newReview.username,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        id_product: newReview.id_product,
+      };
+
       return res
         .status(201)
-        .json({ code: 201, message: "success", data: newReview });
+        .json({ code: 201, message: "success", data: sendToJson });
     } catch (error) {
       return res.status(500).json({
         code: 500,

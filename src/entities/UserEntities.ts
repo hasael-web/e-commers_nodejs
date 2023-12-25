@@ -1,5 +1,14 @@
-import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from "typeorm";
 import { ReviewsEntities } from "./ReviewsEntities";
+import { ProductEntities } from "./ProductEntities";
 
 @Entity({ name: "users" })
 export class UserEntities {
@@ -11,14 +20,24 @@ export class UserEntities {
   username: string;
   @Column({ name: "password" })
   password: string;
+  @Column({ name: "role", nullable: true, default: "" })
+  role: string;
   @Column({ name: "profile_image", default: "empty" })
   profile_image: string;
   @OneToMany(() => ReviewsEntities, (review) => review.id_user, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  @JoinColumn({ name: "review" })
-  review: ReviewsEntities[];
+  @JoinColumn({ name: "reviews" })
+  reviews: ReviewsEntities[];
+
+  @OneToMany(() => ProductEntities, (products) => products.id_user, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
+  @JoinColumn()
+  products: ProductEntities[];
+
   @Column({
     name: "created_at",
     type: "timestamp",
@@ -31,4 +50,11 @@ export class UserEntities {
     default: () => "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+  @Column({
+    name: "deleted_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
+  deleted_at: Date;
 }

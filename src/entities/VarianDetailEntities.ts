@@ -5,7 +5,10 @@ import { VariansEntities } from "./VariansEntities";
 export class VarianDetailEntities {
   @PrimaryColumn({ name: "id_varian_detail" })
   id: string;
-  @ManyToOne(() => VariansEntities, (variant) => variant.variant_detail)
+  @ManyToOne(() => VariansEntities, (variant) => variant.varian_detail, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
   @JoinColumn()
   id_varians: string;
   @Column({ name: "price" })
@@ -26,4 +29,11 @@ export class VarianDetailEntities {
     default: () => "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+  @Column({
+    name: "deleted_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
+  deleted_at: Date;
 }

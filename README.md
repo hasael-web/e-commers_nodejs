@@ -1,36 +1,62 @@
-# Awesome Project Build with TypeORM
+# API DOCUMENTASI
 
-Steps to run this project:
+### GET STARTED
 
-1. Run `yarn` command
-2. Setup database settings inside `data-source.ts` file
-3. Run `yarn dev` command
+1. If using yarn :
 
-## API ENDPOINT
+   > installation
+   > `$ yarn`
+   > run
+   > `$ yarn dev `
 
-    Products API
+2. If using npm :
+   > installation
+   > `$ npm install`
+   > run
+   > `npm run dev`
 
-#### FIND ALL PRODUCTS
+# API ENDPOINT
 
-> Method : `GET`
-> URL : `http://localhost:3000/api/v1/products `
+- [A] PRODUCTS
 
-### CREATED PRODUCT
+  - > GET ALL PRODUCTS
+    - > METHOD : `GET`
+    - > URL : `http://localhost:3000/api/v1/products`
+    - > RESULT :
+  - > GET ONE PRODUCT
+    - > METHOD : `GET`
+    - > URL : `http://localhost:3000/api/v1/product/{id_product}`
+    - > example : `http://localhost:3000/api/v1/product/6f0480fa-48e7-45ce-b171-8e301c4c2e79`
+    - > RESULT :
+  - > CREATED PRODUCT
+    - > MEHTOD : `POST`
+    - > URL : `http://localhost:3000/api/v1/product`
+    - > note : " Making products requires quite complex body data"
+    - > example :
+    - > RESULT :
+  - > DELETED PRODUCT
+    - > METHOD : `DELETE`
+    - > URL : `http://localhost:3000/api/v1/product/{id_product}`
+    - > example : `http://localhost:3000/api/v1/product/fac08e5c-096f-4c0c-8eda-96468d544728`
+    - > RESULT :
 
-> Method : `POST`
-> URL : `http://localhost:3000/api/v1/product`
+- [B] REVIEWS
 
-### UPDATE PRODUCT
+  - > MAKE REVIEWS FOR PRODUCTS
+    - > METHOD : `POST`
+    - > URL : `http://localhost:3000/api/v1/review`
+    - > note : `REVIEWS REQUIRE DATA FROM THE BODY`
+    - > example :
+    - > RESULT
 
-> Method : `PATCH`
-> URL : `http://localhost:3000/api/v1/product/{id_product}`
-
-### FIND ONE PRODUCT
-
-> Method : `GET`
-> URL : `http://localhost:3000/api/v1/product/{id_product}`
-
-### DELETE PRODUCT
-
-> Method : `DELETE`
-> URL : `http://localhost:3000/api/v1/product/{id_product}`
+- [C] USERS
+  - > REGISTER
+    - > METHOD : `POST`
+    - > URL : `http://localhost:3000/api/v1/register`
+    - > example :
+    - > RESULT:
+  - > LOGIN
+    - > METHOD : `POST`
+    - > URL :`http://localhost:3000/api/v1/login`
+    - > example :
+    - > RESULT :

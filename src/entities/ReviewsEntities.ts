@@ -22,9 +22,9 @@ export class ReviewsEntities {
   rating: number;
   @Column({ name: "comment" })
   comment: string;
-  @ManyToOne(() => UserEntities, (user) => user.review)
+  @ManyToOne(() => UserEntities, (user) => user.reviews)
   @JoinColumn({ name: "id_user" })
-  id_user: string;
+  id_user: UserEntities;
   // relasi to table products
   @ManyToOne(() => ProductEntities, (product) => product.reviews, {
     onDelete: "CASCADE",
@@ -44,4 +44,11 @@ export class ReviewsEntities {
     default: () => "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+  @Column({
+    name: "deleted_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    nullable: true,
+  })
+  deleted_at: Date;
 }

@@ -27,3 +27,39 @@
 //   isTokenValid,
 //   attachCookiesToResponse,
 // };
+
+import { sign, verify } from "jsonwebtoken";
+import { Response } from "express";
+
+type TPayload = {
+  username: string;
+  email: string;
+  id: string;
+  role: string;
+};
+
+type TToken = {
+  token: string;
+};
+
+export default new (class JWT {
+  createJWT(payload: TPayload) {
+    const token = sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_LIFETIME,
+    });
+    return token;
+  }
+
+  isTokenValid(token: TToken) {
+    const result = verify(token.token, process.env.JWT_SECRET);
+    return { result };
+  }
+  attachToCookies(res: Response, payload: TToken) {
+    const oneDay = 1000 * 60 * 60 * 24;
+    console.log(payload);
+
+    res.cookie("token_user", payload.token, {
+      expires: new Date(Date.now() + oneDay),
+    });
+  }
+})();

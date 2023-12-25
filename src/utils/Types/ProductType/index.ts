@@ -7,6 +7,18 @@ export type TPostProduct = {
   features: string[];
 };
 
+export type TUpdateProduct = {
+  name: string;
+  description: string;
+  material: string;
+  categories: string[];
+  features: string[];
+  // color: string;
+  // size: string;
+  // stock: string;
+  // price: number;
+};
+
 export type TImageFromMulter = {
   placeholder: boolean;
   url: string;
