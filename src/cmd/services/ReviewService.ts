@@ -44,6 +44,8 @@ export default new (class ReviewService {
           .json({ code: 404, message: "id user not found" });
       }
 
+      
+
       const object = {
         id: id_review,
         id_user: user,
@@ -53,7 +55,14 @@ export default new (class ReviewService {
         id_product: value.id_product,
       };
 
-      const newReview = await this.ReviewsRepository.save(object);
+      const newReview = await this.ReviewsRepository.save({
+        comment: object.comment,
+        id: object.id,
+        id_product: object.id_product,
+        id_user: object.id_user,
+        rating: object.rating,
+        username: object.username,
+      });
       if (!newReview) {
         return res
           .status(404)

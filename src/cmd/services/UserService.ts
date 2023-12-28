@@ -182,11 +182,17 @@ export default new (class UserResponse {
 
       await this.UsersRepository.save(userUpdate);
 
+      const findUser = await this.UsersRepository.findOne({
+        where: {
+          id: userUpdate.id,
+        },
+      });
+
       const sendTotoken = {
-        id: userUpdate.id,
-        email: userUpdate.email,
-        username: userUpdate.username,
-        role: userUpdate.role,
+        id: findUser.id,
+        email: findUser.email,
+        username: findUser.username,
+        role: findUser.role,
       };
 
       const token = jwt.createJWT(sendTotoken);
