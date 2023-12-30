@@ -47,6 +47,8 @@ export default new (class ProductService {
         varians,
       }: TPostProduct = req.body;
 
+      // console.log(varians);
+
       const { value, error } = ProductValidate.validate({
         categories,
         description,
@@ -60,9 +62,11 @@ export default new (class ProductService {
       const id_product: string = uuidv4();
 
       if (error) {
-        return res
-          .status(404)
-          .json({ code: 404, message: "error to create new product,", error });
+        return res.status(404).json({
+          code: 404,
+          message: "error to create new product,",
+          error: error.details[0],
+        });
       }
 
       let returnToJson: any = {};
@@ -124,27 +128,22 @@ export default new (class ProductService {
           });
         }
 
-        const fieldVarians = {
-          color: "color",
-          varian_detail: "varian_detail",
-        };
+        // const fieldVarians = {
+        //   color: "color",
+        //   varian_detail: "varian_detail",
+        // };
 
-        for (const fieldvarians in fieldVarians) {
+        const product: any = id_product;
+
+        for (let index = 0; index < varians.length; index++) {
           const id_varians = uuidv4();
-          const product: any = id_product;
-          let color: string = "";
-
-          if (varians[fieldvarians] === "color") {
-            color = varians[fieldvarians];
-          }
           const dataToVarians = {
             id: id_varians,
             products: product,
-            color,
+            color: varians[index].color,
             created_at,
             updated_at,
           };
-
           // varians
           const variansReponse = await transactionalEntityManager.save(
             VariansEntities,
@@ -155,17 +154,17 @@ export default new (class ProductService {
               .status(404)
               .json({ code: 404, message: "cannot save varians" });
           }
+          const id_varian_detail = uuidv4();
 
-          // membuat detail varian
-          if (varians[fieldvarians] === "varian_detail") {
-            for (const i of varians[fieldvarians]) {
-              const id_varian_detail = uuidv4();
+          for (let j = 0; j < varians[index].varian_detail.length; j++) {
+            const check = varians[index].varian_detail[j];
+            if (check !== undefined) {
               const dataToDetail = {
                 id: id_varian_detail,
                 id_varians,
-                size: i.size,
-                price: i.price,
-                stock: i.stock,
+                size: check.size,
+                price: check.price,
+                stock: check.stock,
                 created_at,
                 updated_at,
               };
@@ -179,38 +178,74 @@ export default new (class ProductService {
             }
           }
 
-          const returnVarians = varians.map((varian: any) => {
-            const validDetails = varian.varian_detail.filter(
-              (detail: any) => detail !== null
-            );
-            return {
-              color: varian.color,
-              varian_detail: validDetails.length > 0 ? validDetails : null,
-            };
-          });
-          returnToJson = {
-            id: obejct.id,
-            name: obejct.name,
-            material: obejct.material,
-            description: obejct.description,
-            image_src: imageSrc,
-            features: features,
-            varians: returnVarians,
-            categories: categories,
-            created_at,
-            updated_at,
-          };
+          // const indexVarianDetail = varians[index].varian_detail.length - 1;
+          // if (
+          //   varians[index].varian_detail.length > 0 &&
+          //   varians[index].varian_detail[indexVarianDetail] !== null &&
+          //   varians[index].varian_detail[indexVarianDetail] !== undefined
+          // ) {
+          //   for (let j = 0; j < varians[index].varian_detail.length; j++) {
+          //     const size = varians[index].varian_detail[indexVarianDetail].size;
+          //     const price =
+          //       varians[index].varian_detail[indexVarianDetail].price;
+          //     const stock =
+          //       varians[index].varian_detail[indexVarianDetail].stock;
+
+          //     const dataToDetail = {
+          //       id: id_varian_detail,
+          //       id_varians,
+          //       size: size,
+          //       price: price,
+          //       stock: stock,
+          //       created_at,
+          //       updated_at,
+          //     };
+          //     const responseDetail = await transactionalEntityManager.save(
+          //       VarianDetailEntities,
+          //       dataToDetail
+          //     );
+          //     if (!responseDetail) {
+          //       throw new Error("error creating variant detail data");
+          //     }
+          //   }
+          // }
         }
+
+        // }
+
+        const returnVarians = varians.map((varian: any) => {
+          const validDetails = varian.varian_detail.filter(
+            (detail: any) => detail !== null
+          );
+          return {
+            color: varian.color,
+            varian_detail: validDetails.length > 0 ? validDetails : null,
+          };
+        });
+        returnToJson = {
+          id: obejct.id,
+          name: obejct.name,
+          material: obejct.material,
+          description: obejct.description,
+          image_src: imageSrc,
+          features: features,
+          varians: returnVarians,
+          categories: categories,
+          created_at,
+          updated_at,
+        };
       });
 
       return res
         .status(201)
         .json({ code: 201, message: "success", data: returnToJson });
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({
         code: 500,
         message: "internal server error on create new products",
-        error,
+        error: error.message,
       });
     }
   }
@@ -312,9 +347,6 @@ export default new (class ProductService {
         where: {
           id: id_product,
         },
-        // relations:{
-        //   reviews
-        // }
         relations: ["reviews", "varians", "varians.varian_detail"],
       });
 

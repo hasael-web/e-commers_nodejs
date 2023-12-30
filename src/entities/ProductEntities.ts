@@ -9,6 +9,7 @@ import {
 import { ReviewsEntities } from "./ReviewsEntities";
 import { VariansEntities } from "./VariansEntities";
 import { UserEntities } from "./UserEntities";
+import { OrderEntities } from "./OrderEntities";
 
 @Entity({ name: "product" })
 export class ProductEntities {
@@ -34,6 +35,7 @@ export class ProductEntities {
   })
   @JoinColumn({ name: "id_user" })
   id_user: UserEntities;
+
   @OneToMany(() => VariansEntities, (variant) => variant.products, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
@@ -53,6 +55,13 @@ export class ProductEntities {
   })
   @JoinColumn()
   reviews: ReviewsEntities[];
+
+  @OneToMany(() => OrderEntities, (order) => order.product, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
+  order: OrderEntities[];
+
   @Column({
     name: "created_at",
     type: "timestamp",

@@ -6,6 +6,7 @@ dotenv.config();
 
 // all router imported
 import {
+  OrderRouter,
   ProductRouter,
   ReviewRouter,
   Test_VariantROuter,
@@ -40,6 +41,7 @@ AppDataSource.initialize()
     app.use("/api/v1", ProductRouter);
     app.use("/api/v1", ReviewRouter);
     app.use("/api/v1", UserRouter);
+    app.use("/api/v1", OrderRouter);
     app.use("/api/v2", Test_VariantROuter);
 
     app.listen(port, () => console.log(`server running ${port}`));

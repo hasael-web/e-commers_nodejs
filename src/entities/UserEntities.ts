@@ -9,6 +9,8 @@ import {
 } from "typeorm";
 import { ReviewsEntities } from "./ReviewsEntities";
 import { ProductEntities } from "./ProductEntities";
+import { OrderEntities } from "./OrderEntities";
+import { TransactionEntities } from "./TransactionEntities";
 
 @Entity({ name: "users" })
 export class UserEntities {
@@ -37,6 +39,17 @@ export class UserEntities {
   })
   @JoinColumn()
   products: ProductEntities[];
+
+  @OneToMany(() => TransactionEntities, (transaction) => transaction.user)
+  @JoinColumn()
+  transaction: TransactionEntities;
+
+  @OneToMany(() => OrderEntities, (order) => order.user, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
+  @JoinColumn()
+  order: OrderEntities[];
 
   @Column({
     name: "created_at",
