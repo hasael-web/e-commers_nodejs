@@ -42,7 +42,7 @@ export class UserEntities {
 
   @OneToMany(() => TransactionEntities, (transaction) => transaction.user)
   @JoinColumn()
-  transaction: TransactionEntities;
+  transaction: TransactionEntities[];
 
   @OneToMany(() => OrderEntities, (order) => order.user, {
     onDelete: "CASCADE",

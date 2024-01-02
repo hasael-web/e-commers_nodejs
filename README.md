@@ -383,3 +383,194 @@
   }
 }
 ```
+
+- [C] TRANSACTION AND ORDER
+
+  - > Post Order
+    - > METHOD : `POST`
+    - > URL : `http://localhost:4000/api/v1/order`
+    - > AUTH :
+          - > true
+          - >   rule customers and suppliers can place orders
+    - > EXAMPLE :
+    ```json
+    //data from  body
+    {
+      "price": 4000,
+      "quantity": 5,
+      "id_product": "038e355b-f589-41ac-a2ee-f98b8206d338"
+    }
+    ```
+    - > RESULT :
+    ```json
+    {
+      "code": 201,
+      "data": {
+        "id": "27c9831b-1d35-4916-b857-2f53deaa8a1c",
+        "price": 4000,
+        "quantity": 5,
+        "subtotal": 20000,
+        "status": "pendding",
+        "created_at": "2024-01-02T06:53:12.522Z",
+        "updated_at": "2024-01-02T06:53:12.522Z",
+        "product": {
+          "id": "038e355b-f589-41ac-a2ee-f98b8206d338",
+          "name": "products baru",
+          "description": "test description product",
+          "material": "besi",
+          "categories": ["test 1 categories"],
+          "features": ["test 1 features", "test 2 features"],
+          "image_src": [
+            "https://res.cloudinary.com/dxjezbg17/image/upload/v1703938278/ptwrlkqwlbqqmz5nb0wy.png",
+            "https://res.cloudinary.com/dxjezbg17/image/upload/v1703938279/snjworteuombzuhvmpwb.jpg",
+            "https://res.cloudinary.com/dxjezbg17/image/upload/v1703938280/jtjdlozr2yyrdjzzpuh6.png"
+          ],
+          "rating_average": 0,
+          "rating_count": 0,
+          "created_at": "2023-12-30T12:11:14.875Z",
+          "updated_at": "2023-12-30T12:11:14.875Z",
+          "deleted_at": "2023-12-30T05:11:15.014Z"
+        },
+        "user": {
+          "id": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+          "email": "haselbutar@gmail.com",
+          "username": "hasael1244",
+          "role": "supplier",
+          "profile_image": "empty"
+        }
+      }
+    }
+    ```
+  - > PAY ORDER (TRANSACTION)
+
+    - > METHOD :`POST`
+    - > URL :``
+    - > AUTH :
+          - > true
+    - > NOTE :`carry out the transaction after the order is made`
+    - > EXAMPLE :
+
+    ```json
+    {
+      "total_price": 20000,
+      "id_order": "7881ec5e-c583-4ce8-a7c3-3aee1c872d32"
+    }
+    ```
+
+    - > RESULT :
+
+    ```json
+    {
+      "code": 201,
+      "message": "transaction success",
+      "data": {
+        "id": "7881ec5e-c583-4ce8-a7c3-3aee1c872d32",
+        "price": 4000,
+        "quantity": 5,
+        "subtotal": 20000,
+        "status": "paid",
+        "created_at": "2024-01-02T07:05:47.137Z",
+        "updated_at": "2024-01-02T07:05:47.137Z"
+      }
+    }
+    ```
+
+  - > GET ALL ORDERS PLACED BY USERS (CUSTOMER)
+
+    - > METHOD : `GET`
+    - > URL : `http://localhost:4000/api/v1/order-customer`
+    - > AUTH :
+          	- > true
+    - > RESULT :
+
+    ```json
+    {
+      "code": 200,
+      "data": [
+        {
+          "id": "81c386c7-af11-4aaa-ba6b-08cb2447608c",
+          "price": 4000,
+          "quantity": 5,
+          "subtotal": 20000,
+          "status": "pendding",
+          "created_at": "2023-12-30T12:12:34.840Z",
+          "updated_at": "2023-12-30T12:12:34.840Z",
+          "user": {
+            "id": "0f674f0e-be14-4b38-936a-924afa13a61b",
+            "username": "test123",
+            "role": "customer"
+          }
+        },
+        {
+          "id": "6f283bca-a9ac-4b84-afcd-9753d6a7eb76",
+          "price": 4000,
+          "quantity": 5,
+          "subtotal": 20000,
+          "status": "paid",
+          "created_at": "2023-12-30T12:30:29.153Z",
+          "updated_at": "2023-12-30T12:30:29.153Z",
+          "user": {
+            "id": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+            "username": "hasael1244",
+            "role": "supplier"
+          }
+        }
+      ]
+    }
+    ```
+
+    - > GET ALL CUSTOMER DATA WHO MAKE ORDERS TO THE PRODUCT SUPPLIER
+      - > METHOD : `GET`
+      - > URL : `http://localhost:4000/api/v1/order-supplier`
+      - > AUTH :
+            - > true
+      - > RESULT :
+      ```json
+      {
+        "code": 200,
+        "data": [
+          {
+            "id": "81c386c7-af11-4aaa-ba6b-08cb2447608c",
+            "price": 4000,
+            "quantity": 5,
+            "subtotal": 20000,
+            "status": "pendding",
+            "created_at": "2023-12-30T12:12:34.840Z",
+            "updated_at": "2023-12-30T12:12:34.840Z",
+            "user": {
+              "id": "0f674f0e-be14-4b38-936a-924afa13a61b",
+              "username": "test123",
+              "role": "customer"
+            }
+          },
+          {
+            "id": "6f283bca-a9ac-4b84-afcd-9753d6a7eb76",
+            "price": 4000,
+            "quantity": 5,
+            "subtotal": 20000,
+            "status": "paid",
+            "created_at": "2023-12-30T12:30:29.153Z",
+            "updated_at": "2023-12-30T12:30:29.153Z",
+            "user": {
+              "id": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+              "username": "hasael1244",
+              "role": "supplier"
+            }
+          },
+          {
+            "id": "a4754ac3-5725-485a-b6a3-3122d448a6a8",
+            "price": 4000,
+            "quantity": 5,
+            "subtotal": 20000,
+            "status": "pendding",
+            "created_at": "2024-01-02T06:46:49.667Z",
+            "updated_at": "2024-01-02T06:46:49.667Z",
+            "user": {
+              "id": "28133c8a-5345-4be9-b2b4-4a9c8faac1cb",
+              "username": "hasael1244",
+              "role": "supplier"
+            }
+          }
+        ]
+      }
+      ```

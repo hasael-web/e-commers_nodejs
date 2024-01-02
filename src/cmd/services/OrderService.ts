@@ -90,8 +90,26 @@ export default new (class OrderService {
       }
 
       const response = await this.OrderRepository.save(order);
+
       if (response) {
-        return res.status(201).json({ code: 201, data: order });
+        const returnTojson = {
+          id: response.id,
+          price: response.price,
+          quantity: response.quantity,
+          subtotal: response.subtotal,
+          status: response.status,
+          created_at: response.created_at,
+          updated_at: response.updated_at,
+          product: response.product,
+          user: {
+            id: response.user.id,
+            email: response.user.email,
+            username: response.user.username,
+            role: response.user.role,
+            profile_image: response.user.profile_image,
+          },
+        };
+        return res.status(201).json({ code: 201, data: returnTojson });
       }
       return res.status(404).json({
         code: 404,
@@ -215,20 +233,16 @@ export default new (class OrderService {
 
   async findByCustomer(req: RequestAuth, res: Response): Promise<Response> {
     try {
-      if (req.user.role === "customer") {
-        const findUser = await this.UsersRespository.findOne({
-          where: {
-            id: req.user.id,
-          },
-          relations: {
-            order: true,
-          },
-        });
+      const findUser = await this.UsersRespository.findOne({
+        where: {
+          id: req.user.id,
+        },
+        relations: {
+          order: true,
+        },
+      });
 
-        return res.status(200).json({ code: 200, data: findUser.order });
-      }
-
-      return res.status(404).json({ code: 200, message: "user not found" });
+      return res.status(200).json({ code: 200, data: findUser.order });
     } catch (error) {
       return res.status(500).json({
         code: 500,
@@ -306,16 +320,16 @@ export default new (class OrderService {
             user: {
               id: findOrder.user.id,
               username: findOrder.user.username,
-              role: "customer",
+              role: findOrder.user.role,
             },
           };
 
           data.push(object);
         }
 
-        return res.status(404).json({ code: 404, data: data });
+        return res.status(404).json({ code: 200, data: data });
       }
-      return res.status(404).json({ code: 200, message: "user not found" });
+      return res.status(404).json({ code: 404, message: "user not found" });
     } catch (error) {
       return res.status(500).json({
         code: 500,

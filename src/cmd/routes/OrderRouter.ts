@@ -5,12 +5,7 @@ import userAuth from "../middlewares/userAuth";
 
 const router = Router();
 
-router.get(
-  "/order-customer",
-  auth.auth,
-  userAuth.roleAuth("customer"),
-  OrderController.findByCustomer
-);
+router.get("/order-customer", auth.auth, OrderController.findByCustomer);
 router.get(
   "/order-supplier",
   auth.auth,
